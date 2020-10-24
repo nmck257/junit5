@@ -91,9 +91,20 @@ public final class TestIdentifier implements Serializable {
 		this.parentId = parentId;
 		this.displayName = displayName;
 		this.source = source;
-		this.tags = unmodifiableSet(new LinkedHashSet<>(tags));
+		this.tags = copyOf(tags);
 		this.type = type;
 		this.legacyReportingName = legacyReportingName;
+	}
+
+	private Set<TestTag> copyOf(Set<TestTag> tags) {
+		switch (tags.size()) {
+			case 0:
+				return emptySet();
+			case 1:
+				return singleton(getOnlyElement(tags));
+			default:
+				return new LinkedHashSet<>(tags);
+		}
 	}
 
 	/**
