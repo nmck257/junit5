@@ -89,8 +89,7 @@ public class UniqueId implements Cloneable, Serializable {
 	private transient SoftReference<String> toString;
 
 	private UniqueId(UniqueIdFormat uniqueIdFormat, Segment segment) {
-		this.uniqueIdFormat = uniqueIdFormat;
-		this.segments = singletonList(segment);
+		this(uniqueIdFormat, singletonList(segment));
 	}
 
 	/**
@@ -101,8 +100,8 @@ public class UniqueId implements Cloneable, Serializable {
 	 * to the list instance that they pass into this constructor.
 	 */
 	UniqueId(UniqueIdFormat uniqueIdFormat, List<Segment> segments) {
-		this.uniqueIdFormat = uniqueIdFormat;
-		this.segments = unmodifiableList(segments);
+		this.uniqueIdFormat = uniqueIdFormat == UniqueIdFormat.getDefault() ? null : uniqueIdFormat;
+		this.segments = segments;
 	}
 
 	final Optional<Segment> getRoot() {
@@ -123,7 +122,7 @@ public class UniqueId implements Cloneable, Serializable {
 	 * {@code UniqueId}.
 	 */
 	public final List<Segment> getSegments() {
-		return this.segments;
+		return unmodifiableList(this.segments);
 	}
 
 	/**
@@ -157,7 +156,8 @@ public class UniqueId implements Cloneable, Serializable {
 	@API(status = STABLE, since = "1.1")
 	public final UniqueId append(Segment segment) {
 		Preconditions.notNull(segment, "segment must not be null");
-		List<Segment> baseSegments = new ArrayList<>(this.segments);
+		List<Segment> baseSegments = new ArrayList<>(this.segments.size() + 1);
+		baseSegments.addAll(segments);
 		baseSegments.add(segment);
 		return new UniqueId(this.uniqueIdFormat, baseSegments);
 	}
