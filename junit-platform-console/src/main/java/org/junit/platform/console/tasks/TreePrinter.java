@@ -11,7 +11,6 @@
 package org.junit.platform.console.tasks;
 
 import static org.junit.platform.commons.util.CollectionUtils.getOnlyElement;
-import static org.junit.platform.console.tasks.Style.*;
 
 import java.io.PrintWriter;
 import java.util.Iterator;
@@ -40,7 +39,7 @@ class TreePrinter {
 	}
 
 	void print(TreeNode node) {
-		out.println(color(CONTAINER, theme.root()));
+		out.println(color(Style.CONTAINER, theme.root()));
 		print(node, "", true);
 		out.flush();
 	}
@@ -63,11 +62,11 @@ class TreePrinter {
 
 	private void printVisible(TreeNode node, String indent, boolean continuous) {
 		String bullet = continuous ? theme.entry() : theme.end();
-		String prefix = color(CONTAINER, indent + bullet);
-		String tabbed = color(CONTAINER, indent + tab(node, continuous));
+		String prefix = color(Style.CONTAINER, indent + bullet);
+		String tabbed = color(Style.CONTAINER, indent + tab(node, continuous));
 		String caption = colorCaption(node);
-		String duration = color(CONTAINER, node.duration + " ms");
-		String icon = color(SKIPPED, theme.skipped());
+		String duration = color(Style.CONTAINER, node.duration + " ms");
+		String icon = color(Style.SKIPPED, theme.skipped());
 		if (node.result().isPresent()) {
 			TestExecutionResult result = node.result().get();
 			Style resultStyle = Style.valueOf(result);
@@ -83,7 +82,7 @@ class TreePrinter {
 		out.print(" ");
 		out.print(icon);
 		node.result().ifPresent(result -> printThrowable(tabbed, result));
-		node.reason().ifPresent(reason -> printMessage(SKIPPED, tabbed, reason));
+		node.reason().ifPresent(reason -> printMessage(Style.SKIPPED, tabbed, reason));
 		node.reports.forEach(e -> printReportEntry(tabbed, e));
 		out.println();
 	}
@@ -109,7 +108,7 @@ class TreePrinter {
 			}
 		}
 		if (node.reason().isPresent()) {
-			return color(SKIPPED, caption);
+			return color(Style.SKIPPED, caption);
 		}
 		Style style = node.identifier().map(Style::valueOf).orElse(Style.NONE);
 		return color(style, caption);
@@ -124,7 +123,7 @@ class TreePrinter {
 		if (StringUtils.isBlank(message)) {
 			message = throwable.toString();
 		}
-		printMessage(FAILED, indent, message);
+		printMessage(Style.FAILED, indent, message);
 	}
 
 	private void printReportEntry(String indent, ReportEntry reportEntry) {
@@ -144,9 +143,9 @@ class TreePrinter {
 
 	private void printReportEntry(String indent, Map.Entry<String, String> mapEntry) {
 		out.print(indent);
-		out.print(color(ABORTED, mapEntry.getKey()));
+		out.print(color(Style.ABORTED, mapEntry.getKey()));
 		out.print(" = `");
-		out.print(color(SUCCESSFUL, mapEntry.getValue()));
+		out.print(color(Style.SUCCESSFUL, mapEntry.getValue()));
 		out.print("`");
 	}
 
