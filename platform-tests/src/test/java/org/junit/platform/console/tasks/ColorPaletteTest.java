@@ -1,10 +1,23 @@
 package org.junit.platform.console.tasks;
 
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.console.options.Theme;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.reporting.ReportEntry;
+import org.junit.platform.fakes.TestDescriptorStub;
+import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.TestPlan;
 
+import java.io.PrintWriter;
 import java.io.StringReader;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class ColorPaletteTest {
     @Nested
@@ -80,6 +93,87 @@ class ColorPaletteTest {
                 """;
 
             Assertions.assertThrows(IllegalArgumentException.class, () -> new ColorPalette(new StringReader(properties)));
+        }
+    }
+
+    @Nested
+    class DemonstratePalettes {
+        @Test
+        void verbose_default() {
+            PrintWriter out = new PrintWriter(System.out);
+            TestExecutionListener listener = new VerboseTreePrintingListener(out, ColorPalette.DEFAULT(),
+                    16, Theme.ASCII);
+
+            demoTestRun(listener);
+
+            assertDoesNotThrow(out::flush);
+        }
+
+        @Test
+        void verbose_single_color() {
+            PrintWriter out = new PrintWriter(System.out);
+            TestExecutionListener listener = new VerboseTreePrintingListener(out, ColorPalette.SINGLE_COlOR(),
+                    16, Theme.ASCII);
+
+            demoTestRun(listener);
+
+            assertDoesNotThrow(out::flush);
+        }
+
+        @Test
+        void simple_default() {
+            PrintWriter out = new PrintWriter(System.out);
+            TestExecutionListener listener = new TreePrintingListener(out, ColorPalette.DEFAULT(), Theme.ASCII);
+
+            demoTestRun(listener);
+
+            assertDoesNotThrow(out::flush);
+        }
+
+        @Test
+        void simple_single_color() {
+            PrintWriter out = new PrintWriter(System.out);
+            TestExecutionListener listener = new TreePrintingListener(out, ColorPalette.SINGLE_COlOR(), Theme.ASCII);
+
+            demoTestRun(listener);
+
+            assertDoesNotThrow(out::flush);
+        }
+
+        @Test
+        void flat_default() {
+            PrintWriter out = new PrintWriter(System.out);
+            TestExecutionListener listener = new FlatPrintingListener(out, ColorPalette.DEFAULT());
+
+            demoTestRun(listener);
+
+            assertDoesNotThrow(out::flush);
+        }
+
+        @Test
+        void flat_single_color() {
+            PrintWriter out = new PrintWriter(System.out);
+            TestExecutionListener listener = new FlatPrintingListener(out, ColorPalette.SINGLE_COlOR());
+
+            demoTestRun(listener);
+
+            assertDoesNotThrow(out::flush);
+        }
+
+        private void demoTestRun(TestExecutionListener listener) {
+            TestDescriptor testDescriptor = new TestDescriptorStub(UniqueId.forEngine("demo-engine"), "My Test");
+            TestPlan testPlan = TestPlan.from(Lists.newArrayList(testDescriptor));
+            listener.testPlanExecutionStarted(testPlan);
+            listener.executionStarted(TestIdentifier.from(testDescriptor));
+            listener.executionFinished(TestIdentifier.from(testDescriptor), TestExecutionResult.successful());
+            listener.dynamicTestRegistered(TestIdentifier.from(testDescriptor));
+            listener.executionStarted(TestIdentifier.from(testDescriptor));
+            listener.executionFinished(TestIdentifier.from(testDescriptor), TestExecutionResult.failed(new Exception()));
+            listener.executionStarted(TestIdentifier.from(testDescriptor));
+            listener.executionFinished(TestIdentifier.from(testDescriptor), TestExecutionResult.aborted(new Exception()));
+            listener.reportingEntryPublished(TestIdentifier.from(testDescriptor), ReportEntry.from("Key", "Value"));
+            listener.executionSkipped(TestIdentifier.from(testDescriptor), "to demonstrate skipping");
+            listener.testPlanExecutionFinished(testPlan);
         }
     }
 }

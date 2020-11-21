@@ -129,6 +129,9 @@ public class ConsoleTestExecutor {
 		if (options.getColorPalettePath() != null) {
 			return new ColorPalette(options.getColorPalettePath());
 		}
+		if (options.isSingleColorPalette()) {
+			return ColorPalette.SINGLE_COlOR();
+		}
 		return ColorPalette.DEFAULT();
 	}
 

@@ -14,7 +14,7 @@ public class ColorPalette {
     private final Map<Style, String> colorsToAnsiSequences;
     private final boolean disableAnsiColors;
 
-    // http://ascii-table.com/ansi-escape-sequences.php
+    // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
     private static Map<Style, String> defaultPalette() {
         Map<Style, String> colorsToAnsiSequences = new EnumMap<>(Style.class);
         colorsToAnsiSequences.put(Style.NONE, "0");
@@ -27,6 +27,24 @@ public class ColorPalette {
         colorsToAnsiSequences.put(Style.DYNAMIC, "35");
         colorsToAnsiSequences.put(Style.REPORTED, "37");
         return colorsToAnsiSequences;
+    }
+
+    private static Map<Style, String> singleColorPalette() {
+        Map<Style, String> colorsToAnsiSequences = new EnumMap<>(Style.class);
+        colorsToAnsiSequences.put(Style.NONE, "0");
+        colorsToAnsiSequences.put(Style.SUCCESSFUL, "1");
+        colorsToAnsiSequences.put(Style.ABORTED, "4");
+        colorsToAnsiSequences.put(Style.FAILED, "7");
+        colorsToAnsiSequences.put(Style.SKIPPED, "9");
+        colorsToAnsiSequences.put(Style.CONTAINER, "1");
+        colorsToAnsiSequences.put(Style.TEST, "0");
+        colorsToAnsiSequences.put(Style.DYNAMIC, "0");
+        colorsToAnsiSequences.put(Style.REPORTED, "2");
+        return colorsToAnsiSequences;
+    }
+
+    public static ColorPalette SINGLE_COlOR() {
+        return new ColorPalette(singleColorPalette(), false);
     }
 
     public static ColorPalette DEFAULT() {
