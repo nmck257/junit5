@@ -105,18 +105,20 @@ public class ConsoleTestExecutor {
 	}
 
 	private Optional<TestExecutionListener> createDetailsPrintingListener(PrintWriter out) {
-		boolean disableAnsiColors = options.isAnsiColorOutputDisabled();
+		ColorPalette colorPalette = options.isAnsiColorOutputDisabled()
+				? ColorPalette.NONE()
+				: ColorPalette.DEFAULT();
 		Theme theme = options.getTheme();
 		switch (options.getDetails()) {
 			case SUMMARY:
 				// summary listener is always created and registered
 				return Optional.empty();
 			case FLAT:
-				return Optional.of(new FlatPrintingListener(out, disableAnsiColors));
+				return Optional.of(new FlatPrintingListener(out, colorPalette));
 			case TREE:
-				return Optional.of(new TreePrintingListener(out, disableAnsiColors, theme));
+				return Optional.of(new TreePrintingListener(out, colorPalette, theme));
 			case VERBOSE:
-				return Optional.of(new VerboseTreePrintingListener(out, disableAnsiColors, 16, theme));
+				return Optional.of(new VerboseTreePrintingListener(out, colorPalette, 16, theme));
 			default:
 				return Optional.empty();
 		}
