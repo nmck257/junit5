@@ -1,8 +1,12 @@
 package org.junit.platform.console.tasks;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.junit.platform.console.tasks.Style.NONE;
 
@@ -25,6 +29,14 @@ public class ColorPalette {
         return colorsToAnsiSequences;
     }
 
+    public static ColorPalette DEFAULT() {
+        return new ColorPalette(defaultPalette(), false);
+    }
+
+    public static ColorPalette NONE() {
+        return new ColorPalette(new HashMap<>(), true);
+    }
+
     public ColorPalette(Map<Style, String> overrides) {
         this(defaultPalette(), false);
 
@@ -34,17 +46,48 @@ public class ColorPalette {
         this.colorsToAnsiSequences.putAll(overrides);
     }
 
-    public static ColorPalette NONE() {
-        return new ColorPalette(new HashMap<>(), true);
+    public ColorPalette(Properties properties) {
+        this(toOverrideMap(properties));
     }
 
-    public static ColorPalette DEFAULT() {
-        return new ColorPalette(defaultPalette(), false);
+    public ColorPalette(Reader reader) {
+        this(getProperties(reader));
+    }
+
+    public ColorPalette(Path path) {
+        this(openReader(path));
     }
 
     private ColorPalette(Map<Style, String> colorsToAnsiSequences, boolean disableAnsiColors) {
         this.colorsToAnsiSequences = colorsToAnsiSequences;
         this.disableAnsiColors = disableAnsiColors;
+    }
+
+    private static Map<Style, String> toOverrideMap(Properties properties) {
+        Map<String, String> upperCaseProperties = properties.entrySet().stream().collect(
+                Collectors.toMap(entry -> ((String) entry.getKey()).toUpperCase(), entry -> (String) entry.getValue()));
+
+        return Arrays.stream(Style.values())
+                .filter(style -> upperCaseProperties.containsKey(style.name()))
+                .collect(Collectors.toMap(Function.identity(), style -> upperCaseProperties.get(style.name())));
+    }
+
+    private static Properties getProperties(Reader reader) {
+        Properties properties = new Properties();
+        try {
+            properties.load(reader);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Could not read color palette properties", e);
+        }
+        return properties;
+    }
+
+    private static Reader openReader(Path path) {
+        try {
+            return new FileReader(path.toFile());
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Could not open color palette properties file", e);
+        }
     }
 
     public String paint(Style style, String text) {

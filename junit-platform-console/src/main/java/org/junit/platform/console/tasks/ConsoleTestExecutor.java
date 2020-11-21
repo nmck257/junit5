@@ -105,9 +105,7 @@ public class ConsoleTestExecutor {
 	}
 
 	private Optional<TestExecutionListener> createDetailsPrintingListener(PrintWriter out) {
-		ColorPalette colorPalette = options.isAnsiColorOutputDisabled()
-				? ColorPalette.NONE()
-				: ColorPalette.DEFAULT();
+		ColorPalette colorPalette = getColorPalette();
 		Theme theme = options.getTheme();
 		switch (options.getDetails()) {
 			case SUMMARY:
@@ -122,6 +120,16 @@ public class ConsoleTestExecutor {
 			default:
 				return Optional.empty();
 		}
+	}
+
+	private ColorPalette getColorPalette() {
+		if (options.isAnsiColorOutputDisabled()) {
+			return ColorPalette.NONE();
+		}
+		if (options.getColorPalettePath() != null) {
+			return new ColorPalette(options.getColorPalettePath());
+		}
+		return ColorPalette.DEFAULT();
 	}
 
 	private Optional<TestExecutionListener> createXmlWritingListener(PrintWriter out) {
