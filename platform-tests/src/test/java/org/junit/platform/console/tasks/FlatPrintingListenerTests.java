@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Nested;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.reporting.ReportEntry;
 import org.junit.platform.fakes.TestDescriptorStub;
@@ -67,6 +68,51 @@ class FlatPrintingListenerTests {
 		assertAll("lines in the output", //
 			() -> assertEquals("Finished:    demo-test ([engine:demo-engine])", lines[0]), //
 			() -> assertEquals(INDENTATION + "=> Exception: java.lang.AssertionError: Boom!", lines[1]));
+	}
+
+	@Nested
+	class Color {
+		@Test
+		void executionSkipped() {
+			var stringWriter = new StringWriter();
+			listener(stringWriter).executionSkipped(newTestIdentifier(), "Test" + EOL + "disabled");
+			var lines = lines(stringWriter);
+
+			assertEquals(3, lines.length);
+			assertAll("lines in the output", //
+					() -> assertEquals("\u001B[35mSkipped:     demo-test ([engine:demo-engine])\u001B[0m", lines[0]), //
+					() -> assertEquals("\u001B[35m" + INDENTATION + "=> Reason: Test", lines[1]), //
+					() -> assertEquals(INDENTATION + "disabled\u001B[0m", lines[2]));
+		}
+
+		@Test
+		void reportingEntryPublished() {
+			var stringWriter = new StringWriter();
+			listener(stringWriter).reportingEntryPublished(newTestIdentifier(), ReportEntry.from("foo", "bar"));
+			var lines = lines(stringWriter);
+
+			assertEquals(2, lines.length);
+			assertAll("lines in the output", //
+					() -> assertEquals("\u001B[37mReported:    demo-test ([engine:demo-engine])\u001B[0m", lines[0]), //
+					() -> assertTrue(lines[1].startsWith("\u001B[37m" + INDENTATION + "=> Reported values: ReportEntry [timestamp =")), //
+					() -> assertTrue(lines[1].endsWith(", foo = 'bar']\u001B[0m")));
+		}
+
+		@Test
+		void executionFinishedWithFailure() {
+			var stringWriter = new StringWriter();
+			listener(stringWriter).executionFinished(newTestIdentifier(), failed(new AssertionError("Boom!")));
+			var lines = lines(stringWriter);
+
+			assertAll("lines in the output", //
+					() -> assertEquals("\u001B[31mFinished:    demo-test ([engine:demo-engine])\u001B[0m", lines[0]), //
+					() -> assertEquals("\u001B[31m" + INDENTATION + "=> Exception: java.lang.AssertionError: Boom!", lines[1]),
+					() -> assertTrue(lines[lines.length - 1].endsWith("\u001B[0m")));
+		}
+
+		private FlatPrintingListener listener(StringWriter stringWriter) {
+			return new FlatPrintingListener(new PrintWriter(stringWriter), false);
+		}
 	}
 
 	private FlatPrintingListener listener(StringWriter stringWriter) {
