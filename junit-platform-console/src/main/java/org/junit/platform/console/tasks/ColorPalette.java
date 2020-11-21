@@ -1,18 +1,28 @@
+/*
+ * Copyright 2015-2020 the original author or authors.
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v2.0 which
+ * accompanies this distribution and is available at
+ *
+ * https://www.eclipse.org/legal/epl-v20.html
+ */
+
 package org.junit.platform.console.tasks;
+
+import static org.junit.platform.console.tasks.Style.NONE;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static org.junit.platform.console.tasks.Style.NONE;
 
 public class ColorPalette {
 	private final Map<Style, String> colorsToAnsiSequences;
@@ -87,18 +97,18 @@ public class ColorPalette {
 
 	private static Map<Style, String> toOverrideMap(Properties properties) {
 		Map<String, String> upperCaseProperties = properties.entrySet().stream().collect(
-				Collectors.toMap(entry -> ((String) entry.getKey()).toUpperCase(), entry -> (String) entry.getValue()));
+			Collectors.toMap(entry -> ((String) entry.getKey()).toUpperCase(), entry -> (String) entry.getValue()));
 
-		return Arrays.stream(Style.values())
-				.filter(style -> upperCaseProperties.containsKey(style.name()))
-				.collect(Collectors.toMap(Function.identity(), style -> upperCaseProperties.get(style.name())));
+		return Arrays.stream(Style.values()).filter(style -> upperCaseProperties.containsKey(style.name())).collect(
+			Collectors.toMap(Function.identity(), style -> upperCaseProperties.get(style.name())));
 	}
 
 	private static Properties getProperties(Reader reader) {
 		Properties properties = new Properties();
 		try {
 			properties.load(reader);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new IllegalArgumentException("Could not read color palette properties", e);
 		}
 		return properties;
@@ -107,15 +117,14 @@ public class ColorPalette {
 	private static Reader openReader(Path path) {
 		try {
 			return new FileReader(path.toFile());
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new IllegalArgumentException("Could not open color palette properties file", e);
 		}
 	}
 
 	public String paint(Style style, String text) {
-		return disableAnsiColors || style == NONE
-				? text
-				: getAnsiFormatter(style) + text + getAnsiFormatter(NONE);
+		return disableAnsiColors || style == NONE ? text : getAnsiFormatter(style) + text + getAnsiFormatter(NONE);
 	}
 
 	private String getAnsiFormatter(Style style) {

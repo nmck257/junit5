@@ -17,15 +17,7 @@ import org.junit.platform.launcher.TestIdentifier;
  * @since 1.0
  */
 enum Style {
-	NONE,
-	SUCCESSFUL,
-	ABORTED,
-	FAILED,
-	SKIPPED,
-	CONTAINER,
-	TEST,
-	DYNAMIC,
-	REPORTED;
+	NONE, SUCCESSFUL, ABORTED, FAILED, SKIPPED, CONTAINER, TEST, DYNAMIC, REPORTED;
 
 	static Style valueOf(TestExecutionResult result) {
 		switch (result.getStatus()) {
