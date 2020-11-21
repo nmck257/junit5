@@ -24,7 +24,7 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ColorPalette {
+class ColorPalette {
 	private final Map<Style, String> colorsToAnsiSequences;
 	private final boolean disableAnsiColors;
 
